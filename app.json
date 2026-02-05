@@ -7,11 +7,17 @@
     "icon": "./assets/images/icon.png",
     "scheme": "gestfyadminmobile",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gestfy.admin"
     },
     "android": {
+      "package": "com.gestfy.admin",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -37,11 +43,10 @@
             "backgroundColor": "#000000"
           }
         }
-      ],
-      "expo-router"
+      ]
     ],
     "experiments": {
-      "reactCompiler": true
+      "reactCompiler": false
     }
   }
 }
