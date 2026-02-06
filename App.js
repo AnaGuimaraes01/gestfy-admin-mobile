@@ -43,7 +43,7 @@ const AppStack = () => (
       cardStyle: { backgroundColor: '#f5f5f5' },
     }}
   >
-    <Stack.Screen name="Dashboard" component={DashboardScreen} />
+    <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
     <Stack.Screen
       name="ProdutosAdmin"
       component={ProdutosAdminScreen}

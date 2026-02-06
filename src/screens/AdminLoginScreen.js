@@ -1,44 +1,38 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { authAPI } from '../services/api';
 import { saveToken, saveUser } from '../storage/authStorage';
 
 const AdminLoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [emailError, setEmailError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+
 
   const handleLogin = async () => {
     // Resetar erros
-    setEmailError('');
+    setUsernameError('');
     setPasswordError('');
 
     // Validação
     let isValid = true;
 
-    if (!email.trim()) {
-      setEmailError('Email é obrigatório');
-      isValid = false;
-    } else if (!validateEmail(email)) {
-      setEmailError('Email inválido');
+    if (!username.trim()) {
+      setUsernameError('Usuário é obrigatório');
       isValid = false;
     }
 
@@ -55,7 +49,7 @@ const AdminLoginScreen = ({ navigation }) => {
 
     try {
       // Chamar API de login
-      const response = await authAPI.login(email, password);
+      const response = await authAPI.login(username, password);
 
       if (response && response.token) {
         // Salvar token e dados do usuário
@@ -65,11 +59,11 @@ const AdminLoginScreen = ({ navigation }) => {
         }
 
         // Limpar campos
-        setEmail('');
+        setUsername('');
         setPassword('');
 
         // Navegar para Dashboard
-        navigation.replace('Dashboard');
+        navigation.replace('DashboardScreend');
       } else {
         Alert.alert('Erro', 'Resposta inválida do servidor');
       }
@@ -79,7 +73,7 @@ const AdminLoginScreen = ({ navigation }) => {
       let errorMessage = 'Erro ao fazer login';
 
       if (error.response?.status === 401) {
-        errorMessage = 'Email ou senha inválidos';
+        errorMessage = 'Usuário ou senha inválidos';
       } else if (error.response?.status === 400) {
         errorMessage = error.response.data?.message || 'Dados inválidos';
       } else if (error.response?.status === 500) {
@@ -109,21 +103,20 @@ const AdminLoginScreen = ({ navigation }) => {
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Email Input */}
+            {/* Username Input */}
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>Usuário</Text>
               <TextInput
-                style={[styles.input, emailError && styles.inputError]}
-                placeholder="seu@email.com"
+                style={[styles.input, usernameError && styles.inputError]}
+                placeholder="Digite seu usuário"
                 placeholderTextColor="#999"
-                value={email}
-                onChangeText={setEmail}
+                value={username}
+                onChangeText={setUsername}
                 editable={!loading}
-                keyboardType="email-address"
                 autoCapitalize="none"
               />
-              {emailError ? (
-                <Text style={styles.errorText}>{emailError}</Text>
+              {usernameError ? (
+                <Text style={styles.errorText}>{usernameError}</Text>
               ) : null}
             </View>
 

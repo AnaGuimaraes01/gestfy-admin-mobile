@@ -1,13 +1,10 @@
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-// URL base da API - Use a URL deployada do backend
-const API_BASE_URL = 'https://gestfy-backend.onrender.com/api';
+// URL base do backend (SEM /api no final)
+const API_BASE_URL = 'https://gestfy-backend.onrender.com';
 
-// Para desenvolvimento local, descomente a linha abaixo:
-// const API_BASE_URL = 'http://localhost:8080/api';
-
-// Criar instância do axios com configurações padrão
+// Criar instância do axios
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -16,305 +13,216 @@ const api = axios.create({
   },
 });
 
-// Interceptador para adicionar token em todas as requisições
+
+// ============================
+// INTERCEPTADOR DE REQUEST
+// ============================
+
 api.interceptors.request.use(
   async (config) => {
+
     try {
+
       const token = await AsyncStorage.getItem('adminToken');
+
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
     } catch (error) {
-      console.error('Erro ao obter token do AsyncStorage:', error);
+
+      console.error('Erro ao obter token:', error);
+
     }
+
     return config;
+
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Interceptador para tratamento de erros globais
+
+// ============================
+// INTERCEPTADOR DE RESPONSE
+// ============================
+
 api.interceptors.response.use(
+
   (response) => response,
+
   async (error) => {
+
     if (error.response?.status === 401) {
-      // Token expirado ou inválido
+
       await AsyncStorage.removeItem('adminToken');
       await AsyncStorage.removeItem('adminUser');
-      // Aqui você pode redirecionar para login se necessário
+
+      console.log("Token inválido ou expirado");
+
     }
+
     return Promise.reject(error);
+
   }
+
 );
 
-// ============ AUTENTICAÇÃO ============
+
+// ============================
+// AUTH (LOGIN FAKE)
+// ============================
+
 export const authAPI = {
-  login: async (email, password) => {
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      return response.data;
-    } catch (error) {
-      throw error;
+
+  login: async (username, password) => {
+
+    // LOGIN IGUAL AO FRONTEND WEB
+
+    if (username === "admin" && password === "admin123") {
+
+      const fakeToken = "fake-token-admin";
+
+      await AsyncStorage.setItem('adminToken', fakeToken);
+      await AsyncStorage.setItem('adminUser', username);
+
+      return {
+        token: fakeToken,
+        username: username
+      };
+
+    } else {
+
+      throw new Error("Usuário ou senha inválidos");
+
     }
+
   },
+
   logout: async () => {
-    try {
-      await AsyncStorage.removeItem('adminToken');
-      await AsyncStorage.removeItem('adminUser');
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  },
+
+    await AsyncStorage.removeItem('adminToken');
+    await AsyncStorage.removeItem('adminUser');
+
+    return true;
+
+  }
+
 };
 
-// ============ CLIENTES ============
+
+// ============================
+// CLIENTES
+// ============================
+
 export const clientesAPI = {
+
   getAll: async () => {
-    try {
-      const response = await api.get('/clientes');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+
+    const response = await api.get('/api/clientes');
+    return response.data;
+
   },
+
   getById: async (id) => {
-    try {
-      const response = await api.get(`/clientes/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+
+    const response = await api.get(`/api/clientes/${id}`);
+    return response.data;
+
   },
+
   create: async (cliente) => {
-    try {
-      const response = await api.post('/clientes', cliente);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+
+    const response = await api.post('/api/clientes', cliente);
+    return response.data;
+
   },
+
   update: async (id, cliente) => {
-    try {
-      const response = await api.put(`/clientes/${id}`, cliente);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+
+    const response = await api.put(`/api/clientes/${id}`, cliente);
+    return response.data;
+
   },
+
   delete: async (id) => {
-    try {
-      await api.delete(`/clientes/${id}`);
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  },
+
+    await api.delete(`/api/clientes/${id}`);
+    return true;
+
+  }
+
 };
 
-// ============ PRODUTOS ============
+
+// ============================
+// PRODUTOS
+// ============================
+
 export const produtosAPI = {
+
   getAll: async () => {
-    try {
-      const response = await api.get('/produtos');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+
+    const response = await api.get('/api/produtos');
+    return response.data;
+
   },
-  getById: async (id) => {
-    try {
-      const response = await api.get(`/produtos/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
+
   create: async (produto) => {
-    try {
-      const response = await api.post('/produtos', produto);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  update: async (id, produto) => {
-    try {
-      const response = await api.put(`/produtos/${id}`, produto);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  delete: async (id) => {
-    try {
-      await api.delete(`/produtos/${id}`);
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  },
+
+    const response = await api.post('/api/produtos', produto);
+    return response.data;
+
+  }
+
 };
 
-// ============ PEDIDOS ============
+
+// ============================
+// PEDIDOS
+// ============================
+
 export const pedidosAPI = {
+
   getAll: async () => {
-    try {
-      const response = await api.get('/pedidos');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  getById: async (id) => {
-    try {
-      const response = await api.get(`/pedidos/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  create: async (pedido) => {
-    try {
-      const response = await api.post('/pedidos', pedido);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  update: async (id, pedido) => {
-    try {
-      const response = await api.put(`/pedidos/${id}`, pedido);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  delete: async (id) => {
-    try {
-      await api.delete(`/pedidos/${id}`);
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  },
+
+    const response = await api.get('/api/pedidos');
+    return response.data;
+
+  }
+
 };
 
-// ============ ESTOQUE ============
+
+// ============================
+// ESTOQUE
+// ============================
+
 export const estoqueAPI = {
+
   getAll: async () => {
-    try {
-      const response = await api.get('/estoque');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  getById: async (id) => {
-    try {
-      const response = await api.get(`/estoque/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  create: async (estoque) => {
-    try {
-      const response = await api.post('/estoque', estoque);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  update: async (id, estoque) => {
-    try {
-      const response = await api.put(`/estoque/${id}`, estoque);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  delete: async (id) => {
-    try {
-      await api.delete(`/estoque/${id}`);
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  },
+
+    const response = await api.get('/api/estoque');
+    return response.data;
+
+  }
+
 };
 
-// ============ CAIXA ============
-export const caixaAPI = {
-  getAll: async () => {
-    try {
-      const response = await api.get('/caixa');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  getById: async (id) => {
-    try {
-      const response = await api.get(`/caixa/${id}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  create: async (caixa) => {
-    try {
-      const response = await api.post('/caixa', caixa);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  update: async (id, caixa) => {
-    try {
-      const response = await api.put(`/caixa/${id}`, caixa);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-};
 
-// ============ RELATÓRIOS ============
+// ============================
+// RELATÓRIOS
+// ============================
+
 export const relatoriosAPI = {
-  getTodosRelatorios: async () => {
-    try {
-      const response = await api.get('/relatorios');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
+
   getVendas: async () => {
-    try {
-      const response = await api.get('/relatorios/vendas');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  getEstoque: async () => {
-    try {
-      const response = await api.get('/relatorios/estoque');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  getFinanceiro: async () => {
-    try {
-      const response = await api.get('/relatorios/financeiro');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
+
+    const response = await api.get('/api/relatorios/vendas');
+    return response.data;
+
+  }
+
 };
+
 
 export default api;
